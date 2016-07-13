@@ -1,0 +1,20 @@
+default:
+    suites:
+        default:
+            filters:
+                tags: @disabled
+            contexts:
+                - FeatureContext:
+                # filepath: order.xml
+        3for2:
+            filters:
+                tags: @3for2
+            contexts:
+                - ThreeForTwoContext:
+                # filepath: order.xml
+        halfprice:
+            filters:
+                tags: @halfprice
+            contexts:
+                - HalfPriceContext:
+                # filepath: order.xml

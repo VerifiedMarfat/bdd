@@ -1,0 +1,6 @@
+{
+    "require": {
+        "behat/behat": "~3.0.6",
+        "phpunit/phpunit": "~4.1.0"
+    }
+}
