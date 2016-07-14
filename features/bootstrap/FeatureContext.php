@@ -43,7 +43,7 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function theFollowingProductsArePutOnTheOrder(TableNode $order)
     {
-        $valid = $this->discounter->validate($order);
+        $valid = $this->discounter->validateKeys($order);
         PHPUnit_Framework_Assert::assertTrue($valid);
     }
 
@@ -52,7 +52,7 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function iShouldNotGetAnythingForFree()
     {
-        $discount = $this->discounter->amount($this->offer['name'], $this->offer['onOffer']);
+        $discount = $this->discounter->amount($this->offer);
         PHPUnit_Framework_Assert::assertEquals(0, $discount);
     }
 
@@ -61,7 +61,7 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function theOrderTotalShouldBe($amount)
     {
-        $total = $this->discounter->total($this->offer['name'], $this->offer['onOffer']);
+        $total = $this->discounter->total($this->offer);
         PHPUnit_Framework_Assert::assertEquals($amount, $total);
     }
 }

@@ -1,6 +1,6 @@
 default:
     suites:
-        default:
+        disabled:
             filters:
                 tags: @disabled
             contexts:

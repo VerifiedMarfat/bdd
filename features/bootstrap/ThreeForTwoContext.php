@@ -26,38 +26,48 @@ class ThreeForTwoContext implements Context, SnippetAcceptingContext
      */
     public function __construct()
     {
-        $this->discounter = new Discounts();
+        $this->discounter = new Discounter();
     }
-    
+
+    /**
+     * @Given the :offerName offer is enabled
+     */
+    public function theOfferIsEnabled($offerName)
+    {
+        $onOffer = $this->discounter->onOffer($offerName);
+        $this->offer = [
+            'name'    => $offerName,
+            'onOffer' => $onOffer
+        ];
+        PHPUnit_Framework_Assert::assertTrue($this->offer['onOffer']);
+    }
+
     /**
      * @When the following products are put on the order
      */
-    public function theFollowingProductsArePutOnTheOrder(TableNode $table)
+    public function theFollowingProductsArePutOnTheOrder(TableNode $order)
     {
-        throw new PendingException();
+        $this->order = $order;
+        $valid = $this->discounter->validateKeys($this->order);
+        PHPUnit_Framework_Assert::assertTrue($valid);
     }
 
     /**
-     * @Then the order total should be :arg1
+     * @Then I should get the :item for free
      */
-    public function theOrderTotalShouldBe($arg1)
+    public function iShouldGetTheForFree($item)
     {
-        throw new PendingException();
+        $validItem = $this->discounter->validateItem($item, $this->offer['name']);
+        PHPUnit_Framework_Assert::assertTrue($validItem);
     }
 
     /**
-     * @Given the :arg1 offer is enabled
+     * @Then the order total should be :amount
      */
-    public function theOfferIsEnabled($arg1)
+    public function theOrderTotalShouldBe($amount)
     {
-        throw new PendingException();
+        $total = $this->discounter->total($this->offer);
+        PHPUnit_Framework_Assert::assertEquals($amount, $total);
     }
 
-    /**
-     * @Then I should get the :arg1 for free
-     */
-    public function iShouldGetTheForFree($arg1)
-    {
-        throw new PendingException();
-    }
 }

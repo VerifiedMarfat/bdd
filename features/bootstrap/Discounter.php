@@ -13,9 +13,7 @@ final class Discounter {
             return $default;
         }
 
-        $discounts = $this->all();
-
-        foreach ($discounts as $discount) {
+        foreach ($this->all() as $discount) {
             if ($name === $discount['name']) {
                 return true;
             }
@@ -28,7 +26,7 @@ final class Discounter {
      * @param [array] $order
      * @return bool
      */
-    public function validate($order) {
+    public function validateKeys($order) {
         $order = $this->make($order);
 
         foreach ($this->fields as $field) {
@@ -42,24 +40,30 @@ final class Discounter {
     }
 
     /**
+     * Validates the keys of the order.
+     * @param [array] $order
+     * @return bool
+     */
+    public function validateItem($name, $offerName) {
+        $orders = $this->find($offerName);
+
+        foreach ($orders as $order) {
+            if ( $order['title'] === strtolower($name) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns the amount of discount to apply to total
      * @param [string] $offer
      * @param [bool] $onOffer
      * @return float
      */
-    public function amount($offer, $onOffer) {
-        if ( !$onOffer ) {
+    public function amount($offer) {
+        if ( !$offer['onOffer'] ) {
             return 0;
-        }
-
-        $offer = $this->find($offer);
-
-        switch ($offer[0]['code']) {
-            case '3for2':
-                return 4.99;
-            default:
-                return 0;
-                break;
         }
     }
 
@@ -69,14 +73,17 @@ final class Discounter {
      * @param [bool] $onOffer
      * @return float
      */
-    public function total($offer, $onOffer) {
-        $offers = $this->find($offer);
-        $total = 0;
+    public function total($order) {
+        $offers = $this->find($order['name']);
+        $total = $this->calculate($offers);
 
-        if ( !$onOffer ) {
+        if ( $order['onOffer'] ) {
 
             foreach ($offers as $offer) {
-                $total += $offer['price'];
+                if ( $offer['name'] === $order['name'] ) {
+                    $total -= $offer['price'];
+                    break;
+                }
             }
         }
         return (float) $total;
@@ -87,7 +94,7 @@ final class Discounter {
      * @param [json] $order
      * @return array
      */
-    private function make($order) {
+    public function make($order) {
         $items = [];
 
         foreach ($order as $item) {
@@ -106,18 +113,12 @@ final class Discounter {
     }
 
     /**
-     * Fields with read/write permissions.
-     * @return array
-     */
-    private $fields = ['category', 'title', 'price'];
-
-    /**
      * Finds the items in the specified offer.
      * @param [string] $name
      * @param [string] $field
      * @return array
      */
-    private function find($name, $field = 'name') {
+    public function find($name, $field = 'name') {
         $items = [];
         $offers = $this->all();
 
@@ -128,6 +129,21 @@ final class Discounter {
         }
         return $items;
     }
+
+    /**
+     * Returns the promo code
+     * @param [string] $name
+     * @return string
+     */
+    private function findCode($name) {
+        return $offer[0]['code'];
+    }
+
+    /**
+     * Fields with read/write permissions.
+     * @return array
+     */
+    private $fields = ['category', 'title', 'price'];
 
     /**
      * Returns all the available offers with the related items.
@@ -172,4 +188,16 @@ final class Discounter {
         return $items;
     }
 
+    /**
+     * Returns the total amount of the order.
+     * @return array
+     */
+    private function calculate($orders) {
+        $total = 0;
+
+        foreach ($orders as $order) {
+            $total += $order['price'];
+        }
+        return $total;
+    }
 }
