@@ -11,6 +11,8 @@ use Behat\Behat\Tester\Exception\PendingException;
  */
 class FeatureContext implements Context, SnippetAcceptingContext
 {
+    private $discounter;
+    private $offer;
     /**
      * Initializes context.
      *
@@ -20,22 +22,29 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function __construct()
     {
+        $this->discounter = new Discounter();
     }
 
     /**
-     * @Given the :arg1 offer is disabled
+     * @Given the :offerName offer is disabled
      */
-    public function theOfferIsDisabled($arg1)
+    public function theOfferIsDisabled($offerName)
     {
-        throw new PendingException();
+        $onOffer = $this->discounter->onOffer($offerName, false);
+        $this->offer = [
+            'name'    => $offerName,
+            'onOffer' => $onOffer
+        ];
+        PHPUnit_Framework_Assert::assertTrue(!$this->offer['onOffer']);
     }
 
     /**
      * @When the following products are put on the order
      */
-    public function theFollowingProductsArePutOnTheOrder(TableNode $table)
+    public function theFollowingProductsArePutOnTheOrder(TableNode $order)
     {
-        throw new PendingException();
+        $valid = $this->discounter->validate($order);
+        PHPUnit_Framework_Assert::assertTrue($valid);
     }
 
     /**
@@ -43,15 +52,16 @@ class FeatureContext implements Context, SnippetAcceptingContext
      */
     public function iShouldNotGetAnythingForFree()
     {
-        throw new PendingException();
+        $discount = $this->discounter->amount($this->offer['name'], $this->offer['onOffer']);
+        PHPUnit_Framework_Assert::assertEquals(0, $discount);
     }
 
     /**
-     * @Then the order total should be :arg1
+     * @Then the order total should be :amount
      */
-    public function theOrderTotalShouldBe($arg1)
+    public function theOrderTotalShouldBe($amount)
     {
-        throw new PendingException();
+        $total = $this->discounter->total($this->offer['name'], $this->offer['onOffer']);
+        PHPUnit_Framework_Assert::assertEquals($amount, $total);
     }
-
 }
