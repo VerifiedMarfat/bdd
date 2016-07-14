@@ -64,7 +64,8 @@ class HalfPriceContext implements Context, SnippetAcceptingContext
      */
     public function theOrderTotalShouldBe($amount)
     {
-        $total = $this->discounter->total($this->offer);
+        $code = $this->discounter->findcode($this->offer['name']);
+        $total = $this->discounter->total($code, true);
         PHPUnit_Framework_Assert::assertEquals($amount, $total);
     }
 }

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<order>
+    <products>
+        <product title="Rimmel Lasting Finish Lipstick 4g" price="4.99">
+            <category>Lipstick</category>
+        </product>
+        <product title="areMinerals Marvelous Moxie Lipstick 3.5g" price="13.95">
+            <category>Lipstick</category>
+        </product>
+        <product title="Rimmel Kate Lasting Finish Matte Lipstick" price="5.49">
+            <category>Lipstick</category>
+        </product>
+    </products>
+    <total>24.43</total>
+</order>
+

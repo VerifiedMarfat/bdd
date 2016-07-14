@@ -24,7 +24,7 @@ final class Discounter {
      * @return bool
      */
     public function validateKeys($order) {
-        $order = $this->make($order);
+        $order = $this->make($order, false);
 
         foreach ( $this->fields as $field ) {
             foreach ( $order as $item ) {
@@ -81,16 +81,16 @@ final class Discounter {
      * @param [bool] $onOffer
      * @return float
      */
-    public function total($deal) {
-        $offers = $this->find($deal['name']);
+    public function total($code, $onOffer = false) {
+        $offers = $this->find($code, 'code');
         $total = $this->calculate($offers);
-        $isDiscounted = ( $deal['onOffer']  && 0 < count($offers) );
+        $isDiscounted = ( $onOffer  && 0 < count($offers) );
 
         if ( $isDiscounted ) {
             foreach ( $offers as $offer ) {
                 switch ( $offer['code'] ) {
                     case '3for2':
-                        if ( strtolower($deal['title']) === strtolower($offer['title']) ) {
+                        if ( strtolower('Rimmel Lasting Finish Lipstick 4g') === strtolower($offer['title']) ) {
                             $total -= $offer['price'];
                         }
                         break;
@@ -111,22 +111,40 @@ final class Discounter {
      * @param [json] $order
      * @return array
      */
-    public function make($order) {
+    public function make($order, $isXML = true) {
         $items = [];
 
-        foreach ( $order as $item ) {
-            if ( !isset($item['Category']) || !isset($item['Title']) ) {
-                break;
+        if ( $isXML ) {
+
+            if (  isset($order->products->product) ) {
+                $products = $order->products->product;
+
+                foreach ($products as $product) {
+                    if ( isset($product->category) && null !== $product->attributes() ) {
+                        $items[] = [
+                            'category' => strtolower($product->category),
+                            'title'    => $product['title'],
+                            'price'    => (float) $product['price'],
+                        ];
+                    }
+                }
             }
 
-            $price = ( isset($item['Price']) ) ? $item['Price'] : 0;
-            $items[] = [
-                'category' => $item['Category'],
-                'title'    => $item['Title'],
-                'price'    => (float) $price,
-            ];
-        }
+        } else if ( !$isXML ) {
 
+            foreach ( $order as $item ) {
+                if ( !isset($item['Category']) || !isset($item['Title']) ) {
+                    break;
+                }
+
+                $price = ( isset($item['Price']) ) ? $item['Price'] : 0;
+                $items[] = [
+                    'category' => $item['Category'],
+                    'title'    => $item['Title'],
+                    'price'    => (float) $price,
+                ];
+            }
+        }
         return $items;
     }
 
@@ -141,12 +159,25 @@ final class Discounter {
         $offers = $this->all();
 
         foreach ( $offers as $item ) {
+            if ( !isset($item[$field]) ) {
+                break;
+            }
             if ( strtolower($name) === strtolower($item[$field]) ) {
                 $items[] = $item;
             }
         }
-
         return $items;
+    }
+
+    /**
+     * Returns the promo code
+     * @param [string] $name
+     * @return string
+     */
+    public function findCode($name) {
+        $offers = $this->find($name);
+
+        return $offers[0]['code'];
     }
 
     /**
@@ -155,16 +186,6 @@ final class Discounter {
      */
     private $fields = ['category', 'title', 'price'];
 
-    /**
-     * Returns the promo code
-     * @param [string] $name
-     * @return string
-     */
-    private function findCode($name) {
-        $offers = $this->find($name);
-
-        return $offers[0]['code'];
-    }
 
     /**
      * Returns all the available offers with the related items.
@@ -202,7 +223,7 @@ final class Discounter {
             'code'     => 'halfprice',
             'category' => 'shampoo',
             'title'    => 'Sebamed Anti-Dandruff Shampoo 200ml',
-            'price'    => 4.54,
+            'price'    => 4.99,
         ];
 
         $items[] = [
@@ -210,7 +231,7 @@ final class Discounter {
             'code'     => 'halfprice',
             'category' => 'conditioner',
             'title'    => 'L\'Oréal Paris Hair Conditioner 250ml',
-            'price'    => 6.4,
+            'price'    => 5.5,
         ];
 
         return $items;

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<order>
+    <products>
+        <product title="Sebamed Anti-Dandruff Shampoo 200ml" price="4.99">
+            <category>Lipstick</category>
+        </product>
+        <product title="L\'Oréal Paris Hair Conditioner 250ml" price="5.5">
+            <category>Lipstick</category>
+        </product>
+    </products>
+    <total>10.49</total>
+</order>
+
