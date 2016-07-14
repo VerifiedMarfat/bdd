@@ -11,9 +11,7 @@ use Behat\Behat\Tester\Exception\PendingException;
  */
 class ThreeForTwoContext implements Context, SnippetAcceptingContext
 {
-    private $code;
     private $discounter;
-    private $discount;
     private $offer;
     private $order;
     
@@ -58,7 +56,8 @@ class ThreeForTwoContext implements Context, SnippetAcceptingContext
     public function iShouldGetTheForFree($item)
     {
         $validItem = $this->discounter->validateItem($item, $this->offer['name']);
-        PHPUnit_Framework_Assert::assertTrue($validItem);
+        $this->offer['title'] = $validItem;
+        PHPUnit_Framework_Assert::assertEquals($item, $validItem);
     }
 
     /**

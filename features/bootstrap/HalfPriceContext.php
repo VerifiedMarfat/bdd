@@ -11,6 +11,8 @@ use Behat\Behat\Tester\Exception\PendingException;
  */
 class HalfPriceContext implements Context, SnippetAcceptingContext
 {
+    private $discounter;
+
     /**
      * Initializes context.
      *
@@ -20,38 +22,49 @@ class HalfPriceContext implements Context, SnippetAcceptingContext
      */
     public function __construct()
     {
-        // 
+        $this->discounter = new Discounter();
+    }
+
+    /**
+     * @Given the :offer offer is enabled
+     */
+    public function theOfferIsEnabled($offerName)
+    {
+        $onOffer = $this->discounter->onOffer($offerName);
+        $this->offer = [
+            'name'    => $offerName,
+            'onOffer' => $onOffer
+        ];
+        PHPUnit_Framework_Assert::assertTrue($this->offer['onOffer']);
     }
 
     /**
      * @When the following products are put on the order
      */
-    public function theFollowingProductsArePutOnTheOrder(TableNode $table)
+    public function theFollowingProductsArePutOnTheOrder(TableNode $order)
     {
-        throw new PendingException();
+        $this->order = $order;
+        $valid = $this->discounter->validateKeys($this->order);
+        PHPUnit_Framework_Assert::assertTrue($valid);
     }
 
     /**
-     * @Then the order total should be :arg1
+     * @Then I should get a :discount discount on :item
      */
-    public function theOrderTotalShouldBe($arg1)
+    public function iShouldGetADiscountOn($discount, $item)
     {
-        throw new PendingException();
+        $validItem = $this->discounter->validateItem($item, $this->offer['name']);
+        $amount = $this->discounter->amount($this->offer);
+        PHPUnit_Framework_Assert::assertEquals($item, $validItem);
+        PHPUnit_Framework_Assert::assertEquals($discount, $amount);
     }
 
     /**
-     * @Given the :arg1 offer is enabled
+     * @Then the order total should be :amount
      */
-    public function theOfferIsEnabled($arg1)
+    public function theOrderTotalShouldBe($amount)
     {
-        throw new PendingException();
-    }
-
-    /**
-     * @Then I should get a :arg1 discount on :arg2
-     */
-    public function iShouldGetADiscountOn($arg1, $arg2)
-    {
-        throw new PendingException();
+        $total = $this->discounter->total($this->offer);
+        PHPUnit_Framework_Assert::assertEquals($amount, $total);
     }
 }
